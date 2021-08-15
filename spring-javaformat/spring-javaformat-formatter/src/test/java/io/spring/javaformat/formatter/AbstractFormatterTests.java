@@ -28,6 +28,8 @@ import org.junit.runners.Parameterized;
 
 import io.spring.javaformat.config.JavaFormatConfig;
 
+import static org.assertj.core.api.Assertions.linesOf;
+
 /**
  * Base class for formatter tests.
  *
@@ -72,6 +74,10 @@ public abstract class AbstractFormatterTests {
 
 	protected final String read(File file) throws Exception {
 		return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+	}
+
+	protected final String read(File file, String lineSeparator) {
+		return String.join(lineSeparator, linesOf(file, StandardCharsets.UTF_8));
 	}
 
 	protected static Collection<Object[]> files(String expectedOverride) {

@@ -21,6 +21,9 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jface.text.IRegion;
@@ -116,6 +119,9 @@ public class Formatter extends CodeFormatter {
 	@Override
 	public TextEdit format(int kind, String source, int offset, int length, int indentationLevel,
 			String lineSeparator) {
+		if (lineSeparator == null) {
+			lineSeparator = detectLineSeparator(source);
+		}
 		return this.delegate.format(kind, source, offset, length, indentationLevel, lineSeparator);
 	}
 
@@ -142,6 +148,9 @@ public class Formatter extends CodeFormatter {
 
 	@Override
 	public TextEdit format(int kind, String source, IRegion[] regions, int indentationLevel, String lineSeparator) {
+		if (lineSeparator == null) {
+			lineSeparator = detectLineSeparator(source);
+		}
 		return this.delegate.format(kind, source, regions, indentationLevel, lineSeparator);
 	}
 
@@ -201,4 +210,18 @@ public class Formatter extends CodeFormatter {
 
 	}
 
+	private String detectLineSeparator(String contents) {
+		Pattern newlinePattern = Pattern.compile("(?<sep>\r?\n)$", Pattern.MULTILINE);
+		Matcher matcher = newlinePattern.matcher(contents);
+		if (!matcher.find()) {
+			return DEFAULT_LINE_SEPARATOR;
+		}
+		String firstMatch = matcher.group("sep");
+		while (matcher.find()) {
+			if (!matcher.group("sep").equals(firstMatch)) {
+				return Formatter.DEFAULT_LINE_SEPARATOR;
+			}
+		}
+		return firstMatch;
+	}
 }
